@@ -11,153 +11,128 @@ class ProfileForm extends StatefulWidget {
 
 class _ProfileFormState extends State<ProfileForm> {
   final TextEditingController nameController = TextEditingController();
-  final TextEditingController otherAllergenController = TextEditingController();
-  final TextEditingController otherGoalController = TextEditingController();
-  final TextEditingController otherAvoidController = TextEditingController();
-
   final List<String> allergens = [];
   final List<String> goals = [];
   final List<String> avoidItems = [];
 
   void handleSubmit() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-
     await prefs.setString('full_name', nameController.text);
     await prefs.setStringList('allergens', allergens);
-    await prefs.setString('other_allergen', otherAllergenController.text);
     await prefs.setStringList('goals', goals);
-    await prefs.setString('other_goal', otherGoalController.text);
     await prefs.setStringList('avoid', avoidItems);
-    await prefs.setString('other_avoid', otherAvoidController.text);
-
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => HomeScreen()),
-    );
+    Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => HomeScreen()));
   }
 
   void toggleChip(List<String> list, String value) {
-    setState(() {
-      if (list.contains(value)) {
-        list.remove(value);
-      } else {
-        list.add(value);
-      }
-    });
+    setState(() => list.contains(value) ? list.remove(value) : list.add(value));
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F9FC),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF4A4EDA),
-        title: const Text('Profile Form'),
-        centerTitle: true,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: SingleChildScrollView(
-          child: Container(
-            padding: const EdgeInsets.all(20.0),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey.withOpacity(0.2),
-                  spreadRadius: 3,
-                  blurRadius: 8,
-                ),
-              ],
+      backgroundColor: const Color(0xFF4A4EDA),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          children: [
+            const SizedBox(height: 40),
+            Center(
+              child: Image.asset(
+                'assets/images/logo.png',
+                height: 120,
+              ),
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                customLabel("Full Name"),
-                TextFormField(
-                  controller: nameController,
-                  decoration: customInputDecoration(),
-                ),
-
-                const SizedBox(height: 20),
-                customLabel("Allergens"),
-                Wrap(
-                  spacing: 10,
-                  children: [
-                    allergenChip("Milk"),
-                    allergenChip("Eggs"),
-                    allergenChip("Fish"),
-                    allergenChip("Peanuts"),
-                    allergenChip("Wheat"),
-                    allergenChip("Soy"),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                customLabel("Other Allergen"),
-                TextFormField(
-                  controller: otherAllergenController,
-                  decoration: customInputDecoration(),
-                ),
-
-                const SizedBox(height: 20),
-                customLabel("Goals"),
-                Wrap(
-                  spacing: 10,
-                  children: [
-                    goalChip("Weight Loss"),
-                    goalChip("Stay Fit"),
-                    goalChip("Gain Muscle"),
-                    goalChip("Improve Digestion"),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                customLabel("Other Goal"),
-                TextFormField(
-                  controller: otherGoalController,
-                  decoration: customInputDecoration(),
-                ),
-
-                const SizedBox(height: 20),
-                customLabel("Trying to Avoid"),
-                Wrap(
-                  spacing: 10,
-                  children: [
-                    avoidChip("Salt"),
-                    avoidChip("Sugar"),
-                    avoidChip("Caffeine"),
-                    avoidChip("Fats"),
-                    avoidChip("Processed Foods"),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                customLabel("Other Item to Avoid"),
-                TextFormField(
-                  controller: otherAvoidController,
-                  decoration: customInputDecoration(),
-                ),
-
-                const SizedBox(height: 30),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF673BDF),
-                      padding: const EdgeInsets.symmetric(vertical: 16.0),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12.0),
+            const SizedBox(height: 20),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(24.0),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10)],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Text(
+                      "Complete Profile",
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF4A4EDA),
                       ),
                     ),
-                    onPressed: handleSubmit,
-                    child: const Text(
-                      "Submit",
-                      style: TextStyle(fontSize: 16),
+                  ),
+                  const SizedBox(height: 24),
+                  customLabel("Full Name"),
+                  TextFormField(
+                    controller: nameController,
+                    decoration: customInputDecoration(),
+                  ),
+                  const SizedBox(height: 20),
+                  customLabel("Allergens"),
+                  Wrap(
+                    spacing: 10,
+                    children: [
+                      allergenChip("Milk"),
+                      allergenChip("Eggs"),
+                      allergenChip("Fish"),
+                      allergenChip("Peanuts"),
+                      allergenChip("Wheat"),
+                      allergenChip("Soy"),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  customLabel("Goals"),
+                  Wrap(
+                    spacing: 10,
+                    children: [
+                      goalChip("Weight Loss"),
+                      goalChip("Stay Fit"),
+                      goalChip("Gain Muscle"),
+                      goalChip("Improve Digestion"),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  customLabel("Trying to Avoid"),
+                  Wrap(
+                    spacing: 10,
+                    children: [
+                      avoidChip("Salt"),
+                      avoidChip("Sugar"),
+                      avoidChip("Caffeine"),
+                      avoidChip("Fats"),
+                      avoidChip("Processed Foods"),
+                    ],
+                  ),
+                  const SizedBox(height: 30),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF673BDF),
+                        padding: const EdgeInsets.symmetric(vertical: 16.0),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12.0),
+                        ),
+                      ),
+                      onPressed: handleSubmit,
+                      child: const Text(
+                        "Done",
+                        style: TextStyle(
+                          fontSize: 19,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );
@@ -165,7 +140,7 @@ class _ProfileFormState extends State<ProfileForm> {
 
   Widget customLabel(String title) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      padding: const EdgeInsets.only(bottom: 6.0),
       child: Text(
         title,
         style: const TextStyle(
@@ -188,33 +163,15 @@ class _ProfileFormState extends State<ProfileForm> {
     );
   }
 
-  Widget allergenChip(String title) {
-    return FilterChip(
-      label: Text(title),
-      selected: allergens.contains(title),
-      onSelected: (_) => toggleChip(allergens, title),
-      backgroundColor: const Color(0xFFE7E9FD),
-      selectedColor: const Color(0xFF4A4EDA),
-      labelStyle: const TextStyle(color: Colors.black),
-    );
-  }
+  Widget allergenChip(String title) => chipWidget(title, allergens);
+  Widget goalChip(String title) => chipWidget(title, goals);
+  Widget avoidChip(String title) => chipWidget(title, avoidItems);
 
-  Widget goalChip(String title) {
+  Widget chipWidget(String title, List<String> targetList) {
     return FilterChip(
       label: Text(title),
-      selected: goals.contains(title),
-      onSelected: (_) => toggleChip(goals, title),
-      backgroundColor: const Color(0xFFE7E9FD),
-      selectedColor: const Color(0xFF4A4EDA),
-      labelStyle: const TextStyle(color: Colors.black),
-    );
-  }
-
-  Widget avoidChip(String title) {
-    return FilterChip(
-      label: Text(title),
-      selected: avoidItems.contains(title),
-      onSelected: (_) => toggleChip(avoidItems, title),
+      selected: targetList.contains(title),
+      onSelected: (_) => toggleChip(targetList, title),
       backgroundColor: const Color(0xFFE7E9FD),
       selectedColor: const Color(0xFF4A4EDA),
       labelStyle: const TextStyle(color: Colors.black),
