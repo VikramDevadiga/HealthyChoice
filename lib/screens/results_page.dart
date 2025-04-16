@@ -59,116 +59,136 @@ class _ResultsPageState extends State<ResultsPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Custom Header
+                    // Header
                     Row(
                       children: [
                         IconButton(
                           icon: const Icon(Icons.arrow_back),
                           onPressed: () => Navigator.pop(context),
                         ),
-                        const Text("Product Results",
-                            style: TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF6D30EA),
-                            )),
+                        const Text(
+                          "Product Results",
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF6D30EA),
+                          ),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 16),
 
-                    // Card Info
+                    // Product Card
                     Container(
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(15),
+                        borderRadius: BorderRadius.circular(20),
                         color: Colors.white,
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black12,
-                            blurRadius: 6,
-                            offset: Offset(0, 3),
+                            color: Colors.black.withOpacity(0.06),
+                            blurRadius: 12,
+                            offset: const Offset(0, 6),
                           ),
                         ],
                       ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          children: [
-                            Image.network(imageUrl, height: 150, fit: BoxFit.cover),
-                            const SizedBox(height: 16),
-                            Text(productName,
-                                style: const TextStyle(
-                                    fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black87)),
-                            const SizedBox(height: 12),
-
-                            // Nutri Score Row
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(nutriScoreIcon, color: nutriScoreColor),
-                                const SizedBox(width: 8),
-                                Text(
-                                  "Nutri-Score: $nutriScore",
-                                  style: TextStyle(
-                                      fontSize: 18, fontWeight: FontWeight.w600, color: nutriScoreColor),
-                                ),
-                              ],
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        children: [
+                          Image.network(imageUrl, height: 150, fit: BoxFit.cover),
+                          const SizedBox(height: 16),
+                          Text(
+                            productName,
+                            style: const TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87,
                             ),
-
-                            if (explanation.isNotEmpty)
-                              Padding(
-                                padding: const EdgeInsets.only(top: 8),
-                                child: Text("📌 $explanation",
-                                    textAlign: TextAlign.center,
-                                    style: const TextStyle(
-                                        fontSize: 14,
-                                        fontStyle: FontStyle.italic,
-                                        color: Colors.grey)),
+                          ),
+                          const SizedBox(height: 12),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(nutriScoreIcon, color: nutriScoreColor),
+                              const SizedBox(width: 8),
+                              Text(
+                                "Nutri-Score: $nutriScore",
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
+                                  color: nutriScoreColor,
+                                ),
                               ),
-                          ],
-                        ),
+                            ],
+                          ),
+                          if (explanation.isNotEmpty)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 8),
+                              child: Text(
+                                "📌 $explanation",
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontStyle: FontStyle.italic,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 20),
 
-                    // Ingredients & Nutrients
-                    _buildInfoCard(
-                      title: "🧪 Ingredients",
-                      content: ingredients,
-                    ),
+                    const SizedBox(height: 20),
+                    _buildInfoCard(title: "🧪 Ingredients", content: ingredients),
                     const SizedBox(height: 12),
                     _buildNutrientCard(nutrientLevels),
-
                     if (allergens.isNotEmpty)
                       _buildInfoCard(
                         title: "⚠️ Allergy Alert",
                         content: allergens,
                         color: Colors.red.shade100,
                       ),
-
                     const SizedBox(height: 20),
 
                     // Buttons
-                    ElevatedButton.icon(
-                      onPressed: () => _speak(productInfo),
-                      icon: const Icon(Icons.volume_up),
-                      label: const Text("Listen to Product Info"),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF6D30EA),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
-                        textStyle: const TextStyle(fontSize: 16),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    OutlinedButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text("🔍 Scan Another Product"),
-                      style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: Color(0xFF6D30EA)),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
-                        textStyle: const TextStyle(fontSize: 16),
-                      ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            onPressed: () => _speak(productInfo),
+                            icon: const Icon(Icons.volume_up, size: 20),
+                            label: const Text("Listen"),
+                            style: OutlinedButton.styleFrom(
+                              side: const BorderSide(color: Color(0xFF6D30EA), width: 1.5),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(15),
+                              ),
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              textStyle: const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: const Text("Scan Again"),
+                            style: OutlinedButton.styleFrom(
+                              side: const BorderSide(color: Color(0xFF6D30EA), width: 1.5),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(15),
+                              ),
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              textStyle: const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 30),
                   ],
@@ -185,19 +205,32 @@ class _ResultsPageState extends State<ResultsPage> {
     return Container(
       decoration: BoxDecoration(
         color: color ?? Colors.white,
-        borderRadius: BorderRadius.circular(15),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
-          BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2)),
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 4,
+            offset: Offset(0, 2),
+          ),
         ],
       ),
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87)),
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
+          ),
           const SizedBox(height: 8),
-          Text(content, style: const TextStyle(fontSize: 14, color: Colors.black54)),
+          Text(
+            content,
+            style: const TextStyle(fontSize: 14, color: Colors.black54),
+          ),
         ],
       ),
     );
@@ -262,7 +295,9 @@ class _ResultsPageState extends State<ResultsPage> {
     if (sugar == 'high') return "This product has high sugar content.";
     if (fat == 'high') return "This product has high fat content.";
     if (salt == 'high') return "This product contains high salt levels.";
-    if (sugar == 'low' && fat == 'low' && salt == 'low') return "This product has a balanced nutritional profile.";
+    if (sugar == 'low' && fat == 'low' && salt == 'low') {
+      return "This product has a balanced nutritional profile.";
+    }
 
     return "Nutritional quality is moderate.";
   }

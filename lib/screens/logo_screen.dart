@@ -1,54 +1,46 @@
 import 'package:flutter/material.dart';
-import 'profile_form.dart'; // Updated to go to ProfileForm
+import 'package:shared_preferences/shared_preferences.dart';
+import 'home_screen.dart';
+import 'profile_form.dart';
 
-class LogoScreen extends StatelessWidget {
+class LogoScreen extends StatefulWidget {
   const LogoScreen({super.key});
+
+  @override
+  State<LogoScreen> createState() => _LogoScreenState();
+}
+
+class _LogoScreenState extends State<LogoScreen> {
+  @override
+  void initState() {
+    super.initState();
+    _navigate();
+  }
+
+  Future<void> _navigate() async {
+    await Future.delayed(const Duration(seconds: 2)); // simulate splash delay
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? fullName = prefs.getString('full_name');
+
+    if (fullName != null && fullName.isNotEmpty) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => HomeScreen()),
+      );
+    } else {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => ProfileForm()),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFF6C30EA), Color(0xFF145AE0)], // Gradient background
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-        ),
-        child: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Logo
-              Image.asset('assets/images/logo.png', height: 350),
-              const SizedBox(height: 40),
-
-              // "Get Started" Button
-              ElevatedButton(
-                onPressed: () {
-                  // Navigate to ProfileForm instead of HomeScreen
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (context) => const ProfileForm()),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  foregroundColor: Colors.blueAccent,
-                  padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                  elevation: 5,
-                ),
-                child: const Text(
-                  "🚀 Get Started",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-              ),
-            ],
-          ),
-        ),
+      backgroundColor: const Color(0xFF6D30EA),
+      body: Center(
+        child: Image.asset('assets/images/logo.png', height: 150),
       ),
     );
   }

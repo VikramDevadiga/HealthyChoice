@@ -122,15 +122,25 @@ class _HomeScreenState extends State<HomeScreen> {
                     const SizedBox(height: 10),
                     Material(
                       elevation: 4,
-                      borderRadius: BorderRadius.circular(30),
+                      borderRadius: BorderRadius.circular(15),
                       child: TypeAheadField<String>(
+                        debounceDuration: const Duration(milliseconds: 200),
+                        suggestionsBoxDecoration: SuggestionsBoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          elevation: 4,
+                        ),
                         textFieldConfiguration: TextFieldConfiguration(
                           controller: _searchController,
                           decoration: InputDecoration(
                             contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
                             hintText: 'Search products or scan barcode',
-                            prefixIcon: Icon(Icons.search),
-                            border: InputBorder.none,
+                            prefixIcon: const Icon(Icons.search),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(15),
+                              borderSide: BorderSide.none,
+                            ),
+                            filled: true,
+                            fillColor: Colors.white,
                           ),
                         ),
                         suggestionsCallback: (pattern) async {
@@ -143,6 +153,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         },
                       ),
                     ),
+
                     if (_errorMessage != null)
                       Padding(
                         padding: const EdgeInsets.only(top: 8),
