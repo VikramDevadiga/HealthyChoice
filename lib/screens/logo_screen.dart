@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'home_screen.dart'; // Import the HomeScreen for navigation
+import 'profile_form.dart'; // Updated to go to ProfileForm
 
 class LogoScreen extends StatelessWidget {
   const LogoScreen({super.key});
@@ -26,10 +26,10 @@ class LogoScreen extends StatelessWidget {
               // "Get Started" Button
               ElevatedButton(
                 onPressed: () {
-                  // Navigate to HomeScreen
+                  // Navigate to ProfileForm instead of HomeScreen
                   Navigator.pushReplacement(
                     context,
-                    MaterialPageRoute(builder: (context) => HomeScreen()),
+                    MaterialPageRoute(builder: (context) => const ProfileForm()),
                   );
                 },
                 style: ElevatedButton.styleFrom(
