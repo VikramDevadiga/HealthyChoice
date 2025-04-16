@@ -78,7 +78,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void _openCamera() async {
     final result = await Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => CameraScreen()),
+      MaterialPageRoute(builder: (context) => ScanPage()),
     );
 
     if (result != null) {

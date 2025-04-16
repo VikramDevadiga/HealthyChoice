@@ -1,302 +1,70 @@
 import 'package:flutter/material.dart';
-import 'package:camera/camera.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:google_mlkit_barcode_scanning/google_mlkit_barcode_scanning.dart';
-import 'package:google_mlkit_commons/google_mlkit_commons.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:audioplayers/audioplayers.dart';
-import '../screens/results_page.dart';
+import 'results_page.dart';
 
-class CameraScreen extends StatefulWidget {
-  const CameraScreen({super.key});
+class ScanPage extends StatefulWidget {
+  const ScanPage({super.key});
 
   @override
-  State<CameraScreen> createState() => _CameraScreenState();
+  _ScanPageState createState() => _ScanPageState();
 }
 
-class _CameraScreenState extends State<CameraScreen> {
-  CameraController? _controller;
-  bool _isInitialized = false;
-  bool _isFlashOn = false;
-  final BarcodeScanner _barcodeScanner = BarcodeScanner();
-  bool _isScanning = false;
+class _ScanPageState extends State<ScanPage> {
   final AudioPlayer _audioPlayer = AudioPlayer();
   bool isScanning = true;
 
-  @override
-  void initState() {
-    super.initState();
-    _initializeCamera();
+  void _playBeep() async {
+    await _audioPlayer.play(AssetSource('sounds/beep.mp3'));
   }
 
-  // ✅ Initialize the back camera only
-  Future<void> _initializeCamera() async {
-    final cameras = await availableCameras();
-
-    // Use back camera only
-    final backCamera = cameras.firstWhere(
-          (camera) => camera.lensDirection == CameraLensDirection.back,
-      orElse: () => CameraDescription(
-        name: 'NoBackCamera',
-        lensDirection: CameraLensDirection.external,
-        sensorOrientation: 0,
-      ),
-    );
-
-    if (backCamera.name == 'NoBackCamera') {
-      _showError('No back camera found');
-      return;
-    }
-
-    final status = await Permission.camera.request();
-    if (status.isDenied) {
-      _showError('Camera permission denied');
-      return;
-    }
-
-    _controller = CameraController(
-      backCamera,
-      ResolutionPreset.high,
-      enableAudio: false,
-    );
-
-    try {
-      await _controller!.initialize();
-      setState(() {
-        _isInitialized = true;
-      });
-
-      // Start image stream for barcode scanning
-      await _controller!.startImageStream((CameraImage image) {
-        _processImage(image);
-      });
-
-    } catch (e) {
-      _showError('Failed to initialize camera: $e');
-    }
-  }
-
-  // ✅ Display error message and return to the previous screen
-  void _showError(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
-    Navigator.pop(context);
-  }
-
-  // ✅ Toggle flash on and off
-  Future<void> _toggleFlash() async {
-    if (_controller == null || !_controller!.value.isInitialized) return;
-
-    try {
-      if (_isFlashOn) {
-        await _controller!.setFlashMode(FlashMode.off);
-      } else {
-        await _controller!.setFlashMode(FlashMode.torch);
-      }
-      setState(() {
-        _isFlashOn = !_isFlashOn;
-      });
-    } catch (e) {
-      _showError('Failed to toggle flash: $e');
-    }
-  }
-
-  // ✅ Handle barcode scanning and navigate with beep sound
   void _onBarcodeScanned(String barcode) async {
-    if (!isScanning) return;  // Prevent multiple scans
+    if (!isScanning) return; // Prevent multiple scans
     setState(() {
       isScanning = false;
     });
 
-    // ✅ Play Beep Sound
-    await _audioPlayer.play(AssetSource('sounds/beep.mp3'));
+    _playBeep(); // Play beep sound
 
-    // ✅ Navigate to ResultsPage with the barcode
+    // Navigate to results page with the scanned barcode
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => ResultsPage(barcode: barcode)),
     ).then((_) {
       setState(() {
-        isScanning = true; // Reset scanning state after returning
+        isScanning = true; // Reset scanning after returning
       });
     });
   }
 
-  // ✅ Process the image and detect barcode
-  Future<void> _processImage(CameraImage image) async {
-    if (_isScanning) return;
-
-    _isScanning = true;
-
-    try {
-      final inputImage = InputImage.fromBytes(
-        bytes: image.planes[0].bytes,
-        metadata: InputImageMetadata(
-          size: Size(image.width.toDouble(), image.height.toDouble()),
-          rotation: InputImageRotation.rotation0deg,
-          format: _getImageFormat(image.format.group),
-          bytesPerRow: image.planes[0].bytesPerRow,
-        ),
-      );
-
-      debugPrint('InputImage created successfully');
-
-      final barcodes = await _barcodeScanner.processImage(inputImage);
-      debugPrint('Barcodes detected: ${barcodes.length}');
-
-      if (barcodes.isNotEmpty) {
-        final barcode = barcodes.first;
-        if (barcode.rawValue != null) {
-          debugPrint('Barcode value: ${barcode.rawValue}');
-          _onBarcodeScanned(barcode.rawValue!);
-        }
-      }
-    } catch (e) {
-      debugPrint('Error processing image: $e');
-    } finally {
-      await Future.delayed(const Duration(milliseconds: 1500));
-      _isScanning = false;
-    }
-  }
-
-  InputImageFormat _getImageFormat(ImageFormatGroup group) {
-    switch (group) {
-      case ImageFormatGroup.yuv420:
-        return InputImageFormat.yuv420;
-      case ImageFormatGroup.bgra8888:
-        return InputImageFormat.bgra8888;
-      case ImageFormatGroup.nv21:
-        return InputImageFormat.nv21;
-      default:
-        return InputImageFormat.nv21; // safest fallback
-    }
-  }
-
-
-  @override
-  void dispose() {
-    _controller?.dispose();
-    _barcodeScanner.close();
-    _audioPlayer.dispose();
-    super.dispose();
-  }
-
   @override
   Widget build(BuildContext context) {
-    if (!_isInitialized) {
-      return const Scaffold(
-        body: Center(
-          child: CircularProgressIndicator(),
-        ),
-      );
-    }
-
     return Scaffold(
+      appBar: AppBar(title: const Text("Scan Product")),
       body: Stack(
+        alignment: Alignment.center,
         children: [
-          // ✅ Camera preview
-          CameraPreview(_controller!),
-
-          // ✅ Scanning overlay
-          CustomPaint(
-            painter: ScannerOverlayPainter(),
-            child: const SizedBox.expand(),
+          MobileScanner(
+            onDetect: (BarcodeCapture capture) {
+              final barcode = capture.barcodes.first.rawValue;
+              if (barcode != null) {
+                _onBarcodeScanned(barcode);
+              }
+            },
           ),
-
-          // ✅ Controls
           Positioned(
-            bottom: 40,
-            left: 0,
-            right: 0,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                IconButton(
-                  icon: Icon(
-                    _isFlashOn ? Icons.flash_on : Icons.flash_off,
-                    color: Colors.white,
-                    size: 32,
-                  ),
-                  onPressed: _toggleFlash,
-                ),
-                GestureDetector(
-                  onTap: () async {
-                    try {
-                      final image = await _controller!.takePicture();
-                      debugPrint('Image captured: ${image.path}');
-                    } catch (e) {
-                      _showError('Failed to capture image: $e');
-                    }
-                  },
-                  child: Container(
-                    width: 70,
-                    height: 70,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: Colors.white,
-                        width: 3,
-                      ),
-                    ),
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(
-                    Icons.close,
-                    color: Colors.white,
-                    size: 32,
-                  ),
-                  onPressed: () => Navigator.pop(context),
-                ),
-              ],
+            bottom: 50,
+            child: Container(
+              padding: const EdgeInsets.all(12),
+              color: Colors.black54,
+              child: const Text(
+                "Align the barcode inside the frame to scan",
+                style: TextStyle(color: Colors.white, fontSize: 16),
+              ),
             ),
           ),
         ],
       ),
     );
   }
-}
-
-// ✅ Scanner overlay with improved rendering
-class ScannerOverlayPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.black54
-      ..style = PaintingStyle.fill;
-
-    final scanArea = Rect.fromCenter(
-      center: Offset(size.width / 2, size.height / 2),
-      width: size.width * 0.8,
-      height: size.width * 0.8,
-    );
-
-    // Draw semi-transparent overlay
-    canvas.drawPath(
-      Path.combine(
-        PathOperation.difference,
-        Path()..addRect(Rect.fromLTWH(0, 0, size.width, size.height)),
-        Path()
-          ..addRRect(RRect.fromRectAndRadius(
-            scanArea,
-            const Radius.circular(12),
-          )),
-      ),
-      paint,
-    );
-
-    // Draw scanning frame
-    final framePaint = Paint()
-      ..color = Colors.white
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 3;
-
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(scanArea, const Radius.circular(16)),
-      framePaint,
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
