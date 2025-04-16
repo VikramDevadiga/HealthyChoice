@@ -4,7 +4,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:google_mlkit_barcode_scanning/google_mlkit_barcode_scanning.dart';
 import 'package:google_mlkit_commons/google_mlkit_commons.dart';
 import 'package:audioplayers/audioplayers.dart';
-import 'package:HealthyChoice/screens/results_page.dart';
+import '../screens/results_page.dart';
 
 class CameraScreen extends StatefulWidget {
   const CameraScreen({super.key});
@@ -128,32 +128,50 @@ class _CameraScreenState extends State<CameraScreen> {
 
     _isScanning = true;
 
-    final inputImage = InputImage.fromBytes(
-      bytes: image.planes[0].bytes,
-      metadata: InputImageMetadata(
-        size: Size(image.width.toDouble(), image.height.toDouble()),
-        rotation: InputImageRotation.rotation0deg,
-        format: InputImageFormat.bgra8888,
-        bytesPerRow: image.planes[0].bytesPerRow,
-      ),
-    );
-
     try {
+      final inputImage = InputImage.fromBytes(
+        bytes: image.planes[0].bytes,
+        metadata: InputImageMetadata(
+          size: Size(image.width.toDouble(), image.height.toDouble()),
+          rotation: InputImageRotation.rotation0deg,
+          format: _getImageFormat(image.format.group),
+          bytesPerRow: image.planes[0].bytesPerRow,
+        ),
+      );
+
+      debugPrint('InputImage created successfully');
+
       final barcodes = await _barcodeScanner.processImage(inputImage);
+      debugPrint('Barcodes detected: ${barcodes.length}');
+
       if (barcodes.isNotEmpty) {
         final barcode = barcodes.first;
         if (barcode.rawValue != null) {
+          debugPrint('Barcode value: ${barcode.rawValue}');
           _onBarcodeScanned(barcode.rawValue!);
         }
       }
     } catch (e) {
       debugPrint('Error processing image: $e');
     } finally {
-      // ✅ Cooldown delay to prevent continuous scanning
       await Future.delayed(const Duration(milliseconds: 1500));
       _isScanning = false;
     }
   }
+
+  InputImageFormat _getImageFormat(ImageFormatGroup group) {
+    switch (group) {
+      case ImageFormatGroup.yuv420:
+        return InputImageFormat.yuv420;
+      case ImageFormatGroup.bgra8888:
+        return InputImageFormat.bgra8888;
+      case ImageFormatGroup.nv21:
+        return InputImageFormat.nv21;
+      default:
+        return InputImageFormat.nv21; // safest fallback
+    }
+  }
+
 
   @override
   void dispose() {
