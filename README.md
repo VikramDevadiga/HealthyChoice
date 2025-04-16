@@ -1,4 +1,4 @@
-# projectapp
+# HealthyChoice
 
 A new Flutter project.
 

@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-// import 'package:safe_choice/api_service.dart';
-import 'package:projectapp/api/api_service.dart';
-// import 'package:safe_choice/results_page.dart';
-import 'package:projectapp/screens/results_page.dart';
+import 'package:flutter_typeahead/flutter_typeahead.dart';
+import '../api/api_service.dart';
+import 'results_page.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
@@ -13,11 +12,39 @@ class SearchPage extends StatefulWidget {
 
 class _SearchPageState extends State<SearchPage> {
   final TextEditingController _controller = TextEditingController();
-  String _searchQuery = "";
+  bool _isLoading = false;
+  String? _errorMessage;
 
-  void _searchProduct() {
-    if (_controller.text.isNotEmpty) {
-      setState(() => _searchQuery = _controller.text);
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _searchProduct(String query) async {
+    if (query.isEmpty) return;
+
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final productData = await ApiService.getProductInfo(query);
+      if (!mounted) return;
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ResultsPage(barcode: query),
+        ),
+      );
+    } catch (e) {
+      setState(() => _errorMessage = "Error fetching product data.");
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -29,20 +56,42 @@ class _SearchPageState extends State<SearchPage> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            TextField(
-              controller: _controller,
-              decoration: const InputDecoration(labelText: "Enter product barcode"),
+            TypeAheadField<String>(
+              textFieldConfiguration: TextFieldConfiguration(
+                controller: _controller,
+                decoration: const InputDecoration(
+                  labelText: "Enter barcode or product name",
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              suggestionsCallback: (pattern) async {
+                return await ApiService.getSuggestions(pattern);
+              },
+              itemBuilder: (context, suggestion) {
+                return ListTile(title: Text(suggestion));
+              },
+              onSuggestionSelected: (suggestion) {
+                _controller.text = suggestion;
+                _searchProduct(suggestion);
+              },
             ),
             const SizedBox(height: 20),
-            ElevatedButton(onPressed: _searchProduct, child: const Text("Search")),
-            if (_searchQuery.isNotEmpty)
-              FutureBuilder<Map<String, dynamic>>(
-                future: ApiService.getProductInfo(_searchQuery),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) return const CircularProgressIndicator();
-                  if (snapshot.hasError) return const Text("Error fetching data");
-                  return ResultsPage(barcode: _searchQuery);
-                },
+
+            ElevatedButton(
+              onPressed: _isLoading ? null : () => _searchProduct(_controller.text.trim()),
+              child: _isLoading
+                  ? const SizedBox(
+                  width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                  : const Text("Search"),
+            ),
+
+            if (_errorMessage != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 10),
+                child: Text(
+                  _errorMessage!,
+                  style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                ),
               ),
           ],
         ),

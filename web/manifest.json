@@ -1,6 +1,6 @@
 {
-    "name": "projectapp",
-    "short_name": "projectapp",
+    "name": "HealthyChoice",
+    "short_name": "HealthyChoice",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

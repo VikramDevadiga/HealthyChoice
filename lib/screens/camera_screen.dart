@@ -4,7 +4,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:google_mlkit_barcode_scanning/google_mlkit_barcode_scanning.dart';
 import 'package:google_mlkit_commons/google_mlkit_commons.dart';
 import 'package:audioplayers/audioplayers.dart';
-import 'package:projectapp/screens/results_page.dart';
+import 'package:HealthyChoice/screens/results_page.dart';
 
 class CameraScreen extends StatefulWidget {
   const CameraScreen({super.key});

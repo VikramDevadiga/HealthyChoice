@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_typeahead/flutter_typeahead.dart';
+import '../api/api_service.dart';
 import '../models/product_scan.dart';
 import '../widgets/allergen_filter_chip.dart';
 import '../widgets/recent_scan_item.dart';
 import 'camera_screen.dart';
-import 'search_page.dart';
+import 'results_page.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -11,7 +13,10 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  // Sample allergen filters
+  final TextEditingController _searchController = TextEditingController();
+  bool _isLoading = false;
+  String? _errorMessage;
+
   final List<Map<String, dynamic>> allergenFilters = [
     {'label': 'Gluten Free', 'status': 'safe', 'icon': Icons.check, 'color': Colors.green},
     {'label': 'Dairy', 'status': 'caution', 'icon': Icons.warning, 'color': Colors.orange},
@@ -20,7 +25,6 @@ class _HomeScreenState extends State<HomeScreen> {
     {'label': 'Shellfish', 'status': 'danger', 'icon': Icons.close, 'color': Colors.red},
   ];
 
-  // Sample recent scans
   final List<ProductScan> recentScans = [
     ProductScan(
       name: "Nature's Path Organic Granola",
@@ -45,7 +49,32 @@ class _HomeScreenState extends State<HomeScreen> {
     ),
   ];
 
-  // Open Camera for Scanning
+  void _searchProduct(String query) async {
+    if (query.isEmpty) return;
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final productData = await ApiService.getProductInfo(query);
+      if (!mounted) return;
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ResultsPage(barcode: query),
+        ),
+      );
+    } catch (e) {
+      setState(() => _errorMessage = "Error fetching product data.");
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
   void _openCamera() async {
     final result = await Navigator.push(
       context,
@@ -55,14 +84,6 @@ class _HomeScreenState extends State<HomeScreen> {
     if (result != null) {
       print('Scanned Barcode: $result');
     }
-  }
-
-  // Navigate to Search Page
-  void _openSearchPage() async {
-    await Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => SearchPage()),
-    );
   }
 
   @override
@@ -76,32 +97,60 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ✅ App Bar
+              // ✅ App Bar with Search
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+                child: Column(
                   children: [
-                    Text(
-                      'HealthyChoice',
-                      style: TextStyle(
-                        color: Color(0xFF6D30EA),
-                        fontSize: isSmallScreen ? 24 : 28,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
                     Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        IconButton(
-                          icon: Icon(Icons.search, color: Colors.black),
-                          onPressed: _openSearchPage,
+                        Text(
+                          'HealthyChoice',
+                          style: TextStyle(
+                            color: Color(0xFF6D30EA),
+                            fontSize: isSmallScreen ? 24 : 28,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                         IconButton(
                           icon: Icon(Icons.notifications_none, color: Colors.black),
-                          onPressed: () {}, // Placeholder for notifications
+                          onPressed: () {},
                         ),
                       ],
                     ),
+                    const SizedBox(height: 10),
+                    Material(
+                      elevation: 4,
+                      borderRadius: BorderRadius.circular(30),
+                      child: TypeAheadField<String>(
+                        textFieldConfiguration: TextFieldConfiguration(
+                          controller: _searchController,
+                          decoration: InputDecoration(
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                            hintText: 'Search products or scan barcode',
+                            prefixIcon: Icon(Icons.search),
+                            border: InputBorder.none,
+                          ),
+                        ),
+                        suggestionsCallback: (pattern) async {
+                          return await ApiService.getSuggestions(pattern);
+                        },
+                        itemBuilder: (context, suggestion) => ListTile(title: Text(suggestion)),
+                        onSuggestionSelected: (suggestion) {
+                          _searchController.text = suggestion;
+                          _searchProduct(suggestion);
+                        },
+                      ),
+                    ),
+                    if (_errorMessage != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8),
+                        child: Text(
+                          _errorMessage!,
+                          style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                        ),
+                      ),
                   ],
                 ),
               ),
@@ -158,37 +207,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const SizedBox(height: 24),
 
-              // ✅ Quick Actions
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Expanded(
-                      child: _buildQuickActionButton(
-                        icon: Icons.qr_code_scanner,
-                        label: 'Scan',
-                        color: Color(0xFF6D30EA),
-                        onTap: _openCamera,
-                        isSmallScreen: isSmallScreen,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: _buildQuickActionButton(
-                        icon: Icons.search,
-                        label: 'Search',
-                        color: Colors.orange,
-                        onTap: _openSearchPage,
-                        isSmallScreen: isSmallScreen,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              // ✅ Recent Scans Section
+              // ✅ Recent Scans
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: Text(
@@ -201,7 +220,6 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const SizedBox(height: 16),
 
-              // ✅ Recent Scans List (Scrollable)
               ListView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
@@ -221,7 +239,6 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
 
-      // ✅ Floating Camera Button
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _openCamera,
         backgroundColor: const Color(0xFF6D30EA),
@@ -231,26 +248,6 @@ class _HomeScreenState extends State<HomeScreen> {
           style: TextStyle(color: Colors.white),
         ),
         elevation: 4,
-      ),
-    );
-  }
-
-  // ✅ Quick Action Button Builder
-  Widget _buildQuickActionButton({
-    required IconData icon,
-    required String label,
-    required Color color,
-    required VoidCallback onTap,
-    required bool isSmallScreen,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      child: Column(
-        children: [
-          Icon(icon, color: color, size: isSmallScreen ? 32 : 40),
-          const SizedBox(height: 8),
-          Text(label, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-        ],
       ),
     );
   }
