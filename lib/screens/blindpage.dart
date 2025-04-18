@@ -12,48 +12,41 @@ class BlindPage extends StatefulWidget {
 
 class _BlindPageState extends State<BlindPage> {
   final FlutterTts flutterTts = FlutterTts();
-  DateTime? _lastTapTime;
+
+  final String instruction =
+      "Now the Healthy Choice App will try to scan the barcode behind the product. "
+      "So make sure to show around the package of food. "
+      "Tap 1 time to open scanner and tap and hold to repeat.";
 
   @override
   void initState() {
     super.initState();
-    speakInstructions();
+    _speakInstructions();
   }
 
-  Future<void> speakInstructions() async {
+  Future<void> _speakInstructions() async {
     await flutterTts.setLanguage("en-US");
     await flutterTts.setSpeechRate(0.5);
-    await flutterTts.speak(
-      "Tap 1 time to scan product barcode, and tap 2 times to search product through voice.",
+    await flutterTts.speak(instruction);
+  }
+
+  void _handleTap() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const ScanPage()),
     );
   }
 
-  void handleTap() {
-    final now = DateTime.now();
-    if (_lastTapTime != null &&
-        now.difference(_lastTapTime!) < const Duration(milliseconds: 500)) {
-      _lastTapTime = null;
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => HomeScreen()),
-      );
-    } else {
-      _lastTapTime = now;
-      Future.delayed(const Duration(milliseconds: 600), () {
-        if (_lastTapTime != null && DateTime.now().difference(_lastTapTime!) >= const Duration(milliseconds: 500)) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const ScanPage()),
-          );
-        }
-      });
-    }
+  void _handleLongPress() {
+    flutterTts.stop();
+    _speakInstructions();
   }
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: handleTap,
+      onTap: _handleTap,
+      onLongPress: _handleLongPress,
       child: Scaffold(
         backgroundColor: Colors.black,
         body: Center(
