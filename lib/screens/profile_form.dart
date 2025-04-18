@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'home_screen.dart';
 
-
 class ProfileForm extends StatefulWidget {
   const ProfileForm({super.key});
 
@@ -14,40 +13,48 @@ class _ProfileFormState extends State<ProfileForm> {
   final TextEditingController nameController = TextEditingController();
   final List<String> goals = [];
   final List<String> avoidItems = [];
+  final List<String> healthIssues = [
+    "Heart Disease",
+    "High Blood Pressure",
+    "High Cholesterol",
+    "Type 2 Diabetes",
+    "Obesity",
+    "Irritable Bowel Syndrome (IBS)",
+    "Acid Reflux",
+    "Food Allergies",
+    "Fatty Liver",
+    "Kidney Stones",
+  ];
 
   final Map<String, List<String>> preferenceSections = {
-    "Nutritional quality*": [
-      "Good nutritional quality (Nutri-Score)",
-      "Salt in low quantity",
-      "Sugars in low quantity",
-      "Fat in low quantity",
-      "Saturated fat in low quantity",
+    "Nutrition": [
+      "High nutrition score",
+      "Low salt",
+      "Low sugar",
+      "Low fat",
+      "Low saturated fat",
     ],
-    "Ingredients*": ["Vegan", "Vegetarian", "Palm oil free"],
-    "Environment*": [
-      "Low environmental impact (Green-Score)",
-      "Low risk of deforestation (Forest footprint)"
+    "Ingredients": ["Vegan", "Vegetarian", "Palm oil free"],
+    "Processing": [
+      "Minimally processed",
+      "Few or no additives"
     ],
-    "Food processing": [
-      "No or little food processing (NOVA group)",
-      "No or few additives"
-    ],
-    "Labels": ["Organic farming", "Fair trade"],
-    "Allergens*": [
-      "Without Gluten",
-      "Without Milk",
-      "Without Eggs",
-      "Without Nuts",
-      "Without Peanuts",
-      "Without Sesame seeds",
-      "Without Soybeans",
-      "Without Celery",
-      "Without Mustard",
-      "Without Lupin",
-      "Without Fish",
-      "Without Crustaceans",
-      "Without Molluscs",
-      "Without Sulphur dioxide and sulphites"
+    "Labels": ["Organic", "Fair trade"],
+    "Allergens": [
+      "Gluten-free",
+      "Dairy-free",
+      "Egg-free",
+      "Nut-free",
+      "Peanut-free",
+      "Sesame-free",
+      "Soy-free",
+      "Celery-free",
+      "Mustard-free",
+      "Lupin-free",
+      "Fish-free",
+      "Shellfish-free",
+      "Mollusc-free",
+      "Sulfite-free"
     ],
   };
 
@@ -117,11 +124,11 @@ class _ProfileFormState extends State<ProfileForm> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  questionBlock("Full Name*", child: TextFormField(
+                  questionBlock("Full Name", child: TextFormField(
                     controller: nameController,
                     decoration: customInputDecoration(),
                   )),
-                  questionBlock("Goals*", child: Wrap(
+                  questionBlock("Goals", child: Wrap(
                     spacing: 10,
                     children: [
                       chip("Weight Loss", goals),
@@ -130,13 +137,16 @@ class _ProfileFormState extends State<ProfileForm> {
                       chip("Improve Digestion", goals),
                     ],
                   )),
+                  questionBlock("Health Issues", child: Wrap(
+                    spacing: 10,
+                    children: healthIssues.map((issue) => chip(issue, avoidItems)).toList(),
+                  )),
                   questionBlock("Trying to Avoid", child: Wrap(
                     spacing: 10,
                     children: [
                       chip("Salt", avoidItems),
                       chip("Sugar", avoidItems),
                       chip("Caffeine", avoidItems),
-                      chip("Fats", avoidItems),
                       chip("Processed Foods", avoidItems),
                     ],
                   )),
