@@ -14,9 +14,9 @@ class _BlindPageState extends State<BlindPage> {
   final FlutterTts flutterTts = FlutterTts();
 
   final String instruction =
-      "Now the Healthy Choice App will try to scan the barcode behind the product. "
-      "So make sure to show around the package of food. "
-      "Tap 1 time to open scanner and tap and hold to repeat.";
+      "Healthy Choice will now scan the product's barcode."
+      "Show the entire package. Tap once to start scanning,"
+      "or tap and hold to hear this again.";
 
   @override
   void initState() {
@@ -25,8 +25,8 @@ class _BlindPageState extends State<BlindPage> {
   }
 
   Future<void> _speakInstructions() async {
-    await flutterTts.setLanguage("en-US");
-    await flutterTts.setSpeechRate(0.5);
+    await flutterTts.setLanguage("en-IN");
+    await flutterTts.setSpeechRate(0.35);
     await flutterTts.speak(instruction);
   }
 

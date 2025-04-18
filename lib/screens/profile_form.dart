@@ -54,10 +54,10 @@ class _ProfileFormState extends State<ProfileForm> {
   }
 
   Future<void> speakBlindNotice() async {
-    await flutterTts.setLanguage("en-US");
-    await flutterTts.setSpeechRate(0.5);
+    await flutterTts.setLanguage("en-IN");
+    await flutterTts.setSpeechRate(0.4);
     await flutterTts.speak(
-      "Hey, are you a blind person? If yes, then please tap and hold on the screen so we can personalize our app for you.",
+      "Welcome to Healthy Choice, your go to for healthy food! If you're visually impaired, tap and hold the screen, so we can personalize the app for you.",
     );
   }
 
