@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../api/api_service.dart';
 import '../models/product_scan.dart';
 import '../widgets/allergen_filter_chip.dart';
 import '../widgets/recent_scan_item.dart';
 import 'camera_screen.dart';
 import 'results_page.dart';
+import 'view_profile_page.dart';
+
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -16,6 +19,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final TextEditingController _searchController = TextEditingController();
   bool _isLoading = false;
   String? _errorMessage;
+  String userName = '';
 
   final List<Map<String, dynamic>> allergenFilters = [
     {'label': 'Gluten Free', 'status': 'safe', 'icon': Icons.check, 'color': Colors.green},
@@ -48,6 +52,19 @@ class _HomeScreenState extends State<HomeScreen> {
       scanDate: DateTime.now().subtract(Duration(days: 1)),
     ),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserName();
+  }
+
+  void _loadUserName() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      userName = prefs.getString('full_name') ?? '';
+    });
+  }
 
   void _searchProduct(String query) async {
     if (query.isEmpty) return;
@@ -114,9 +131,15 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         ),
                         IconButton(
-                          icon: Icon(Icons.notifications_none, color: Colors.black),
-                          onPressed: () {},
+                          icon: const Icon(Icons.person_outline, color: Colors.black),
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (_) => const ViewProfilePage()),
+                            );
+                          },
                         ),
+
                       ],
                     ),
                     const SizedBox(height: 10),
@@ -153,7 +176,6 @@ class _HomeScreenState extends State<HomeScreen> {
                         },
                       ),
                     ),
-
                     if (_errorMessage != null)
                       Padding(
                         padding: const EdgeInsets.only(top: 8),
@@ -195,10 +217,10 @@ class _HomeScreenState extends State<HomeScreen> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
-                            'Scan Your Food',
+                            userName.isNotEmpty ? 'Hello\n$userName!' : 'Hello!',
                             style: TextStyle(
                               color: Colors.white,
-                              fontSize: isSmallScreen ? 24 : 28,
+                              fontSize: isSmallScreen ? 20 : 28,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -250,16 +272,25 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
 
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _openCamera,
-        backgroundColor: const Color(0xFF6D30EA),
-        icon: const Icon(Icons.qr_code_scanner, color: Colors.white),
-        label: const Text(
-          'Scan Product',
-          style: TextStyle(color: Colors.white),
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        child: SizedBox(
+          width: double.infinity,
+          height: 60,
+          child: FloatingActionButton.extended(
+            onPressed: _openCamera,
+            backgroundColor: const Color(0xFF6D30EA),
+            icon: const Icon(Icons.qr_code_scanner, color: Colors.white, size: 30),
+            label: const Text(
+              'Scan Product',
+              style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            elevation: 5,
+          ),
         ),
-        elevation: 4,
       ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+
     );
   }
 }

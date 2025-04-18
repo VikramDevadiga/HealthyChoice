@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'home_screen.dart';
 
+
 class ProfileForm extends StatefulWidget {
   const ProfileForm({super.key});
 
@@ -11,17 +12,65 @@ class ProfileForm extends StatefulWidget {
 
 class _ProfileFormState extends State<ProfileForm> {
   final TextEditingController nameController = TextEditingController();
-  final List<String> allergens = [];
   final List<String> goals = [];
   final List<String> avoidItems = [];
+
+  final Map<String, List<String>> preferenceSections = {
+    "Nutritional quality*": [
+      "Good nutritional quality (Nutri-Score)",
+      "Salt in low quantity",
+      "Sugars in low quantity",
+      "Fat in low quantity",
+      "Saturated fat in low quantity",
+    ],
+    "Ingredients*": ["Vegan", "Vegetarian", "Palm oil free"],
+    "Environment*": [
+      "Low environmental impact (Green-Score)",
+      "Low risk of deforestation (Forest footprint)"
+    ],
+    "Food processing": [
+      "No or little food processing (NOVA group)",
+      "No or few additives"
+    ],
+    "Labels": ["Organic farming", "Fair trade"],
+    "Allergens*": [
+      "Without Gluten",
+      "Without Milk",
+      "Without Eggs",
+      "Without Nuts",
+      "Without Peanuts",
+      "Without Sesame seeds",
+      "Without Soybeans",
+      "Without Celery",
+      "Without Mustard",
+      "Without Lupin",
+      "Without Fish",
+      "Without Crustaceans",
+      "Without Molluscs",
+      "Without Sulphur dioxide and sulphites"
+    ],
+  };
+
+  late Map<String, List<String>> preferenceSelections;
+
+  @override
+  void initState() {
+    super.initState();
+    preferenceSelections = {
+      for (var key in preferenceSections.keys) key: [],
+    };
+  }
 
   void handleSubmit() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString('full_name', nameController.text);
-    await prefs.setStringList('allergens', allergens);
     await prefs.setStringList('goals', goals);
     await prefs.setStringList('avoid', avoidItems);
-    Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => HomeScreen()));
+    for (var entry in preferenceSelections.entries) {
+      await prefs.setStringList('pref_${entry.key}', entry.value);
+    }
+    Navigator.pushReplacement(
+        context, MaterialPageRoute(builder: (_) => HomeScreen()));
   }
 
   void toggleChip(List<String> list, String value) {
@@ -40,17 +89,19 @@ class _ProfileFormState extends State<ProfileForm> {
             Center(
               child: Image.asset(
                 'assets/images/logo.png',
-                height: 120,
+                height: 100,
               ),
             ),
             const SizedBox(height: 20),
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(24.0),
+              padding: const EdgeInsets.all(20.0),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(20),
-                boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10)],
+                boxShadow: const [
+                  BoxShadow(color: Colors.black12, blurRadius: 10)
+                ],
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -65,48 +116,39 @@ class _ProfileFormState extends State<ProfileForm> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 24),
-                  customLabel("Full Name"),
-                  TextFormField(
+                  const SizedBox(height: 20),
+                  questionBlock("Full Name*", child: TextFormField(
                     controller: nameController,
                     decoration: customInputDecoration(),
-                  ),
-                  const SizedBox(height: 20),
-                  customLabel("Allergens"),
-                  Wrap(
+                  )),
+                  questionBlock("Goals*", child: Wrap(
                     spacing: 10,
                     children: [
-                      allergenChip("Milk"),
-                      allergenChip("Eggs"),
-                      allergenChip("Fish"),
-                      allergenChip("Peanuts"),
-                      allergenChip("Wheat"),
-                      allergenChip("Soy"),
+                      chip("Weight Loss", goals),
+                      chip("Stay Fit", goals),
+                      chip("Gain Muscle", goals),
+                      chip("Improve Digestion", goals),
                     ],
-                  ),
-                  const SizedBox(height: 20),
-                  customLabel("Goals"),
-                  Wrap(
+                  )),
+                  questionBlock("Trying to Avoid", child: Wrap(
                     spacing: 10,
                     children: [
-                      goalChip("Weight Loss"),
-                      goalChip("Stay Fit"),
-                      goalChip("Gain Muscle"),
-                      goalChip("Improve Digestion"),
+                      chip("Salt", avoidItems),
+                      chip("Sugar", avoidItems),
+                      chip("Caffeine", avoidItems),
+                      chip("Fats", avoidItems),
+                      chip("Processed Foods", avoidItems),
                     ],
-                  ),
-                  const SizedBox(height: 20),
-                  customLabel("Trying to Avoid"),
-                  Wrap(
-                    spacing: 10,
-                    children: [
-                      avoidChip("Salt"),
-                      avoidChip("Sugar"),
-                      avoidChip("Caffeine"),
-                      avoidChip("Fats"),
-                      avoidChip("Processed Foods"),
-                    ],
-                  ),
+                  )),
+                  ...preferenceSections.entries.map((entry) {
+                    return questionBlock(entry.key, child: Wrap(
+                      spacing: 10,
+                      runSpacing: 8,
+                      children: entry.value
+                          .map((item) => chip(item, preferenceSelections[entry.key]!))
+                          .toList(),
+                    ));
+                  }).toList(),
                   const SizedBox(height: 30),
                   SizedBox(
                     width: double.infinity,
@@ -138,16 +180,47 @@ class _ProfileFormState extends State<ProfileForm> {
     );
   }
 
-  Widget customLabel(String title) {
+  Widget chip(String title, List<String> list) {
+    return FilterChip(
+      label: Text(title),
+      selected: list.contains(title),
+      onSelected: (_) => toggleChip(list, title),
+      backgroundColor: const Color(0xFFE7E9FD),
+      selectedColor: const Color(0xFF4A4EDA),
+      labelStyle: const TextStyle(color: Colors.black),
+    );
+  }
+
+  Widget questionBlock(String title, {required Widget child}) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 6.0),
-      child: Text(
-        title,
-        style: const TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.bold,
-          color: Color(0xFF4A4EDA),
-        ),
+      padding: const EdgeInsets.symmetric(vertical: 12.0),
+      child: Row(
+        children: [
+          Expanded(
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF4F5FB),
+                borderRadius: BorderRadius.circular(15),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF4A4EDA),
+                      fontSize: 15,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  child,
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -160,21 +233,6 @@ class _ProfileFormState extends State<ProfileForm> {
         borderRadius: BorderRadius.circular(12.0),
         borderSide: BorderSide.none,
       ),
-    );
-  }
-
-  Widget allergenChip(String title) => chipWidget(title, allergens);
-  Widget goalChip(String title) => chipWidget(title, goals);
-  Widget avoidChip(String title) => chipWidget(title, avoidItems);
-
-  Widget chipWidget(String title, List<String> targetList) {
-    return FilterChip(
-      label: Text(title),
-      selected: targetList.contains(title),
-      onSelected: (_) => toggleChip(targetList, title),
-      backgroundColor: const Color(0xFFE7E9FD),
-      selectedColor: const Color(0xFF4A4EDA),
-      labelStyle: const TextStyle(color: Colors.black),
     );
   }
 }
