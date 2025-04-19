@@ -2,16 +2,16 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:audioplayers/audioplayers.dart';
-import 'results_page.dart';
+import 'blind_result.dart';
 
-class ScanPage extends StatefulWidget {
-  const ScanPage({super.key});
+class BlindScanPage extends StatefulWidget {
+  const BlindScanPage({super.key});
 
   @override
-  _ScanPageState createState() => _ScanPageState();
+  _BlindScanPageState createState() => _BlindScanPageState();
 }
 
-class _ScanPageState extends State<ScanPage> with SingleTickerProviderStateMixin {
+class _BlindScanPageState extends State<BlindScanPage> with SingleTickerProviderStateMixin {
   final AudioPlayer _audioPlayer = AudioPlayer();
   final MobileScannerController _controller = MobileScannerController();
   bool isScanning = true;
@@ -31,14 +31,13 @@ class _ScanPageState extends State<ScanPage> with SingleTickerProviderStateMixin
 
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => ResultsPage(barcode: barcode)),
+      MaterialPageRoute(builder: (context) => BlindResultsPage(barcode: barcode)),
     ).then((_) => setState(() => isScanning = true));
   }
 
   @override
   void initState() {
     super.initState();
-
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 2),
@@ -64,7 +63,7 @@ class _ScanPageState extends State<ScanPage> with SingleTickerProviderStateMixin
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        backgroundColor: Color(0xFF4A4EDA),
+        backgroundColor: const Color(0xFF4A4EDA),
         elevation: 0,
         centerTitle: true,
         title: const Text(
@@ -99,8 +98,6 @@ class _ScanPageState extends State<ScanPage> with SingleTickerProviderStateMixin
               }
             },
           ),
-
-          // Scanner Overlay
           Center(
             child: Stack(
               children: [
@@ -130,8 +127,6 @@ class _ScanPageState extends State<ScanPage> with SingleTickerProviderStateMixin
               ],
             ),
           ),
-
-          // Instruction Text
           Positioned(
             bottom: 40,
             left: 20,

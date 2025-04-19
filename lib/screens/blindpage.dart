@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
-import 'camera_screen.dart';
+import 'blind_scanner.dart';
 import 'home_screen.dart';
 
 class BlindPage extends StatefulWidget {
@@ -33,7 +33,7 @@ class _BlindPageState extends State<BlindPage> {
   void _handleTap() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => const ScanPage()),
+      MaterialPageRoute(builder: (_) => const BlindScanPage()),
     );
   }
 
