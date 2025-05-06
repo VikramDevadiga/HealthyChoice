@@ -37,6 +37,7 @@
 <img src="https://github.com/user-attachments/assets/0ad32dd0-8ae3-4dd4-8781-4236ca269044" width="300">
 
 <img src="https://github.com/user-attachments/assets/4a93a277-bbd5-4d1a-b4fd-d54d5dcb693d" width="300">
+
 ---
 
 ## 🛠️ Run HealthyChoice Locally
